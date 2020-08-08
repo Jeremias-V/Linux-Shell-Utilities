@@ -9,13 +9,15 @@ RED='\e[1;31m'
 GREEN='\e[1;32m'
 WHITE='\e[0m'
 CYAN='\e[1;36m'
+BOLD='\033[1m'
+PLAIN='\033[0m'
 
 echo -e "\nFor this script to work properly, make sure you fulfill the following conditions:\n\n\
-\033[1m1)\033[0m This file (${CYAN}verify.sh${WHITE}) should be placed inside a directory.\n\
-\033[1m2)\033[0m In the same directory you sould only have 4 files:\n   ${CYAN}verify.sh${WHITE}, ${CYAN}file.cpp${WHITE}, ${CYAN}input.txt${WHITE} and ${CYAN}compare.txt${WHITE}.\n\
-\033[1m3)\033[0m ${CYAN}file.cpp${WHITE} should be the source code you are going to compile in C++11.\n\
-\033[1m4)\033[0m ${CYAN}input.txt${WHITE} should be the input for you program to run.\n\
-\033[1m5)\033[0m ${CYAN}compare.txt${WHITE} should be the expected correct output to compare your program.\n"
+${BOLD}1)${PLAIN} This file (${CYAN}verify.sh${WHITE}) should be placed inside a directory.\n\
+${BOLD}2)${PLAIN} In the same directory you sould only have 4 files:\n   ${CYAN}verify.sh${WHITE}, ${CYAN}file.cpp${WHITE}, ${CYAN}input.txt${WHITE} and ${CYAN}compare.txt${WHITE}.\n\
+${BOLD}3)${PLAIN} ${CYAN}file.cpp${WHITE} should be the source code you are going to compile in C++11.\n\
+${BOLD}4)${PLAIN} ${CYAN}input.txt${WHITE} should be the input for you program to run.\n\
+${BOLD}5)${PLAIN} ${CYAN}compare.txt${WHITE} should be the expected correct output to compare your program.\n"
 echo "Do you fulfill the conditions above? (y/n) "
 read run
 
