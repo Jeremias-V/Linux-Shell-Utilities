@@ -11,6 +11,7 @@ RED='\e[1;31m'
 GREEN='\e[1;32m'
 WHITE='\e[0m'
 CYAN='\e[1;36m'
+YELLOW='\e[1;33m'
 BOLD='\033[1m'
 PLAIN='\033[0m'
 
@@ -21,7 +22,7 @@ if [ ! -e ".runVerifysh" ]
     nfiles=$(ls | wc -l)
     if [ $nfiles -gt 1 ]; 
         then 
-        echo -e "\n${RED}Error: Directory should be empty for the first run. Found $((${nfiles} -1)) additional file(s).\n"
+        echo -e "\n${RED}Error:${WHITE} Directory should be empty for the first run. Found $((${nfiles} - 1)) additional file(s).\n"
         exit 1
     else
         touch .runVerifysh input.txt expectedOutput.txt
@@ -40,7 +41,7 @@ verify () {
 
     if [ $nfiles != 1 ]
         then
-        echo -e "\n${RED}Error: Found $nfiles source code files.${WHITE}\n"
+        echo -e "\n${RED}Error:${WHITE} Found $nfiles source code files.\n"
         exit 1
     fi
 
@@ -48,35 +49,35 @@ verify () {
 
     if [ ! -e "input.txt" ]
         then
-        echo -e "\n${RED}Error: 'input.txt' not found.${WHITE}\n"
+        echo -e "\n${RED}Error:${WHITE} ${CYAN}'input.txt${WHITE} not found.\n"
         exit 1
     else
         if [ ! -s "input.txt" ]
         then
-        echo -e "\n${RED}Error: 'input.txt' is empty.${WHITE}\n"
+        echo -e "\n${RED}Error:${WHITE} ${CYAN}input.txt${WHITE} is empty.${WHITE}\n"
         exit 1
         fi
     fi
 
     if [ ! -e "expectedOutput.txt" ]
         then
-        echo -e "\n${RED}Error: 'expectedOutput.txt' ${RED}not found.${WHITE}\n"
+        echo -e "\n${RED}Error: ${CYAN}expectedOutput.txt${WHITE} ${RED}not found.${WHITE}\n"
         exit 1
     else
         if [ ! -s "expectedOutput.txt" ]
         then
-        echo -e "\n${RED}Error: 'expectedOutput.txt' is empty.${WHITE}\n"
+        echo -e "\n${RED}Error:${WHITE} ${CYAN}expectedOutput.txt${WHITE} is empty.${WHITE}\n"
         exit 1
         fi
     fi
 
     # Compiling and checking if compiled successfully
 
-    g++ -lm -lcrypt -O2 -std=c++11 -pipe -DONLINE_JUDGE *.cpp
+    g++ -lm -lcrypt -O2 -std=c++11 -pipe -DONLINE_JUDGE *.cpp 2> /dev/null
 
     if [ $? -eq 1 ]
         then
-        echo -e "\n${RED}Error: Could not compile '$(ls *.cpp)'.${WHITE}\n"
+        echo -e "\n${RED}Error:${WHITE} Could not compile ${CYAN}$(ls *.cpp)${WHITE}.\n"
         exit 1
     fi
 
@@ -88,7 +89,7 @@ verify () {
 
     if [ $? -eq 124 ]
         then
-        echo -e "\n${RED}Error: Time limit exceeded. Output file deleted.${WHITE}\n"
+        echo -e "\n${RED}Error:${WHITE} Time limit exceeded. Output file deleted.${WHITE}\n"
         rm output.txt
         exit 1
     fi
@@ -97,21 +98,32 @@ verify () {
 
     if [ $? -eq 1 ]
         then
-        echo -e "\n${RED}Error: Something went wrong while executing '$(ls *.cpp)'.${WHITE}\n"
+        echo -e "\n${RED}Error:${WHITE} Something went wrong while executing ${CYAN}$(ls *.cpp)${WHITE}.\n"
         exit 1
     fi
 
     # Comparing expected output and real output
 
+    if [ -e "diff.txt" ]; then rm diff.txt; fi
     differ=$(diff -a -C 1 output.txt expectedOutput.txt)
 
     if [ $? -eq 0 ]
         then
         echo -e "\n${GREEN}Success! ${WHITE}Your code compiled and the output is as expected.\n"
     else
-        echo -e "\n${RED}Error: Your code compiled but the output is not as expected.\n${WHITE}The following differences were found."
-        sleep 1.5
-        echo -e "\n${differ}\n"
+        diffSize=$(echo -e "${differ}" | wc -l)
+        if [ $diffSize -gt 24 ]
+            then
+            echo -e "\n${RED}Error:${WHITE}\tYour code compiled but the output is not as expected."
+            echo -e "\n${YELLOW}Warning:${WHITE} Too many differences found.\nSaving file ${CYAN}diff.txt${WHITE} so that you can review it.\nNow displaying 10 lines (first 5 and last 5) of ${CYAN}diff.txt${WHITE}:\n"
+            echo -e "Your Output\t\t\t\t\tExpected Output" > diff.txt | diff -y -W105 output.txt expectedOutput.txt >> diff.txt
+            cat diff.txt | head -6
+            cat diff.txt | tail -5
+            echo
+        else
+            echo -e "\n${RED}Error:${WHITE}\tYour code compiled but the output is not as expected.\n\tThe following differences were found."
+            echo -e "\n${differ}\n"
+        fi
     fi
 
     rm output.txt
@@ -143,7 +155,7 @@ if [ "$1" != "-y" ]
         exit 0
         ;;
         *)
-        echo -e "\n${RED}Error: '${run}' is not a valid option.${WHITE}\n"
+        echo -e "\n${RED}Error:${WHITE} '${run}' is not a valid option.\n"
         exit 1
         ;;
 
