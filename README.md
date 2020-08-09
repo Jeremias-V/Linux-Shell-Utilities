@@ -1,5 +1,5 @@
 # Linux-Shell-Utilities
-In this repository I explore shell scripting on Linux by coding scripts that can be quite useful for various things via Bash.
+In this repository I explore shell scripting on Linux by creating scripts that can be quite useful for various things via Bash.
 
 
 ## [UVa-Local-Judge](https://github.com/Jeremias-V/Linux-Shell-Utilities/tree/master/UVa-Local-Judge)
