@@ -1,9 +1,11 @@
 #!/bin/bash
-# Compiling C++11 and comparing output for https://onlinejudge.org/
-# For this shell script to work properly, place this file inside a directory
-# in which there is only 4 files; verify.sh, (filename).cpp, input.txt, compare.txt
-# To make this file executable, either use 'bash verify.sh' or 'chmod +x verify.sh' and then run the file './verify.sh'
-# Coded by Jeremias Villalobos Tenorio.
+
+## Compiling C++11 and comparing output for testing code before submiting https://onlinejudge.org/
+## For this shell script to work properly, place this file inside an empty directory when running for the first time.
+## To make this file executable, either use 'bash verify.sh' or 'chmod +x verify.sh' and then run the file './verify.sh'
+## Coded by Jeremias Villalobos Tenorio.
+
+# Defining formatting variables.
 
 RED='\e[1;31m'
 GREEN='\e[1;32m'
@@ -12,62 +14,143 @@ CYAN='\e[1;36m'
 BOLD='\033[1m'
 PLAIN='\033[0m'
 
-echo -e "\nFor this script to work properly, make sure you fulfill the following conditions:\n\n\
-${BOLD}1)${PLAIN} This file (${CYAN}verify.sh${WHITE}) should be placed inside a directory.\n\
-${BOLD}2)${PLAIN} In the same directory you sould only have 4 files:\n   ${CYAN}verify.sh${WHITE}, ${CYAN}file.cpp${WHITE}, ${CYAN}input.txt${WHITE} and ${CYAN}compare.txt${WHITE}.\n\
-${BOLD}3)${PLAIN} ${CYAN}file.cpp${WHITE} should be the source code you are going to compile in C++11.\n\
-${BOLD}4)${PLAIN} ${CYAN}input.txt${WHITE} should be the input for you program to run.\n\
-${BOLD}5)${PLAIN} ${CYAN}compare.txt${WHITE} should be the expected correct output to compare your program.\n"
-echo "Do you fulfill the conditions above? (y/n) "
-read run
+# Check if it's first run.
 
-if [ $run != "y" ]
+if [ ! -e ".runVerifysh" ]
     then
-    exit 0
+    nfiles=$(ls | wc -l)
+    if [ $nfiles -gt 1 ]; 
+        then 
+        echo -e "\n${RED}Error: Directory should be empty for the first run. Found $((${nfiles} -1)) additional file(s).\n"
+        exit 1
+    else
+        touch .runVerifysh input.txt expectedOutput.txt
+        echo -e "\nFiles ${CYAN}input.txt${WHITE} and ${CYAN}expectedOutput.txt${WHITE} were created.\n"
+        sleep 2
+    fi
 fi
 
-nfiles=$(ls *.cpp | wc -l)
+# Defining main function called verify
 
-if [ $nfiles != 1 ]
+verify () {
+
+    # Check if there is only one source code file.
+
+    nfiles=$(ls *.cpp 2> /dev/null | wc -l)
+
+    if [ $nfiles != 1 ]
+        then
+        echo -e "\n${RED}Error: Found $nfiles source code files.${WHITE}\n"
+        exit 1
+    fi
+
+    # Check if files exist and are not empty.
+
+    if [ ! -e "input.txt" ]
+        then
+        echo -e "\n${RED}Error: 'input.txt' not found.${WHITE}\n"
+        exit 1
+    else
+        if [ ! -s "input.txt" ]
+        then
+        echo -e "\n${RED}Error: 'input.txt' is empty.${WHITE}\n"
+        exit 1
+        fi
+    fi
+
+    if [ ! -e "expectedOutput.txt" ]
+        then
+        echo -e "\n${RED}Error: 'expectedOutput.txt' ${RED}not found.${WHITE}\n"
+        exit 1
+    else
+        if [ ! -s "expectedOutput.txt" ]
+        then
+        echo -e "\n${RED}Error: 'expectedOutput.txt' is empty.${WHITE}\n"
+        exit 1
+        fi
+    fi
+
+    # Compiling and checking if compiled successfully
+
+    g++ -lm -lcrypt -O2 -std=c++11 -pipe -DONLINE_JUDGE *.cpp
+
+    if [ $? -eq 1 ]
+        then
+        echo -e "\n${RED}Error: Could not compile '$(ls *.cpp)'.${WHITE}\n"
+        exit 1
+    fi
+
+    # Running program with input and saving output
+
+    timeout 3 ./a.out < input.txt > output.txt
+
+    # Checking if program takes too long to run.
+
+    if [ $? -eq 124 ]
+        then
+        echo -e "\n${RED}Error: Time limit exceeded. Output file deleted.${WHITE}\n"
+        rm output.txt
+        exit 1
+    fi
+
+    # Checking if the program ran successfully
+
+    if [ $? -eq 1 ]
+        then
+        echo -e "\n${RED}Error: Something went wrong while executing '$(ls *.cpp)'.${WHITE}\n"
+        exit 1
+    fi
+
+    # Comparing expected output and real output
+
+    differ=$(diff -a -C 1 output.txt expectedOutput.txt)
+
+    if [ $? -eq 0 ]
+        then
+        echo -e "\n${GREEN}Success! ${WHITE}Your code compiled and the output is as expected.\n"
+    else
+        echo -e "\n${RED}Error: Your code compiled but the output is not as expected.\n${WHITE}The following differences were found."
+        sleep 1.5
+        echo -e "\n${differ}\n"
+    fi
+
+    rm output.txt
+
+}
+
+# Check conditions to run.
+
+if [ "$1" != "-y" ]
     then
-    echo -e "${RED}Error: found $nfiles source code files.${WHITE}"
-    exit 0
-fi
+    echo -e "\nFor this script to work properly, make sure you fulfill the following\nconditions:\n\
+    \n${BOLD}1)${PLAIN} This file (${CYAN}verify.sh${WHITE}) should be placed inside a directory.\n\
+    \n${BOLD}2)${PLAIN} In the same directory you sould only have 4 files (${CYAN}a.out${WHITE} doesn't count):\n   ${CYAN}verify.sh${WHITE}, ${CYAN}*.cpp${WHITE}, ${CYAN}input.txt${WHITE} and ${CYAN}expectedOuput.txt${WHITE}.\n\
+    \n${BOLD}3)${PLAIN} ${CYAN}*.cpp${WHITE} ('*' implies any filename but with '.cpp' extension) should be the\n   source code you are going to compile in C++11.\n\
+    \n${BOLD}4)${PLAIN} ${CYAN}input.txt${WHITE} should be the input file for you program to read from\n   (i.e. '*.cpp < input.txt').\n\
+    \n${BOLD}5)${PLAIN} ${CYAN}expectedOutput.txt${WHITE} should be the expected correct output to compare\n   your program.\n\
+    \n${BOLD}6)${PLAIN} ${CYAN}input.txt${WHITE} and ${CYAN}expectedOutput.txt${WHITE} should not be empty.\n\
+    \n${BOLD}If you don't want to display this confirmation again, just run 'verify.sh -y'\n(run with the '-y' argument).${PLAIN}\n"
+    echo -e "Do you fulfill the conditions above? (${BOLD}y${PLAIN}/${BOLD}n${PLAIN}) "
+    read run
 
-if [ ! -e "input.txt" ]
-    then
-    echo -e "${RED}Error: 'input.txt' not found.${WHITE}"
-    exit 0
-fi
+    case $run in
 
-if [ ! -e "compare.txt" ]
-    then
-    echo -e "${RED}Error: 'compare.txt' ${RED}not found.${WHITE}"
-    exit 0
-fi
+        "n" | "N")
+        exit 0
+        ;;
+        "y" | "Y")
+        verify
+        exit 0
+        ;;
+        *)
+        echo -e "\n${RED}Error: '${run}' is not a valid option.${WHITE}\n"
+        exit 1
+        ;;
 
-if [ -e "a.out" ]; then rm a.out; fi
+    esac
 
-g++ -lm -lcrypt -O2 -std=c++11 -pipe -DONLINE_JUDGE *.cpp
-
-if [ ! -e "a.out" ]
-    then
-    echo -e "${RED}Error: could not compile '$(ls *.cpp)' or the compiled file 'a.out' is not found.${WHITE}"
-    exit 0
-fi
-
-./a.out < input.txt > output.txt
-differ=$(diff -a -C 1 output.txt compare.txt)
-
-if [ $? -eq 0 ]
-    then
-    echo -e "\n${GREEN}Success! ${WHITE}Your code compiled and the output is as expected.\n"
 else
-    echo -e "\n${RED}Error: ${WHITE}Your code compiled but the output is not as expected.\nThe following differences were found."
-    sleep 1.5
-    echo -e "\n${differ}\n"
+    verify
+    exit 0
+    
 fi
-
-rm a.out output.txt
-
-exit 0
