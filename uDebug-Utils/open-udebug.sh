@@ -67,8 +67,7 @@ else
     else
 
         # Given ID is not in current directory.
-        validIDs=$(ls *.{py,cpp,c} 2>/dev/null | awk '{i=index($1,"."); print substr($1,0,i-1)}')
-        countValid=$(echo $validIDs | wc -w)
+        countValid=$(ls *.{py,cpp,c} 2>/dev/null | wc -l)
 
         if [ $countValid -eq 0 ]
 
