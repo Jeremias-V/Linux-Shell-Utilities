@@ -67,8 +67,8 @@ else
     else
 
         # Given ID is not in current directory.
-        validIDs=$(find -iname '*.py' -or -iname '*.cpp' -or -iname '*.c' 2>/dev/null | awk '{i=index($1,"."); print substr($1,3)}')
-        countValid=$(echo $validIDs | wc -l)
+        validIDs=$(ls *.{py,cpp,c} 2>/dev/null | awk '{i=index($1,"."); print substr($1,0,i-1)}')
+        countValid=$(echo $validIDs | wc -w)
 
         if [ $countValid -eq 0 ]
 
@@ -80,7 +80,9 @@ else
         else
 
             # Couldn't find the given ID but found multiple valid files.
-            echo -e "\n${RED}Error:${WHITE} The given ID is not in the current directory, try the UVa ID of any of these files.\n${CYAN}${validIDs}${WHITE}\n"
+            echo -e "\n${RED}Error:${WHITE} The given ID is not in the current directory, try the UVa ID of any of these files.${CYAN}"
+            ls --color=none *.{py,cpp,c} 2>/dev/null
+            echo -e "${WHITE}"
             exit 0
 
         fi
