@@ -8,3 +8,6 @@ Might add more functionality later, for now it only works with C++11.
 
 ## [uDebug-Utils](https://github.com/Jeremias-V/Linux-Shell-Utilities/tree/master/uDebug-Utils)
 Here you can find a script that opens the page to the given UVa ID at https://www.udebug.com/UVa with your default web browser. 
+
+## [Bluetooth-Connect](https://github.com/Jeremias-V/Linux-Shell-Utilities/tree/master/Bluetooth-Connect)
+A simple script to connect to previously paired devices using `bluetoothctl`. This script shows intuitive error messages and loading dots when waiting a process.
